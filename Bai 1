@@ -1,0 +1,128 @@
+#include <stdio.h>
+#include <WinSock2.h>
+#include <winbase.h>
+#include <fileapi.h>
+#include <windows.h>
+
+#pragma comment(lib, "ws2_32")
+#pragma warning(disable:4996)
+
+
+int main()
+{
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2, 2), &wsa);
+
+    SOCKET client = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+    SOCKADDR_IN addr;
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    addr.sin_port = htons(8000);
+
+    system("pause");
+
+    int ret = connect(client, (SOCKADDR*)&addr, sizeof(addr));
+    if (ret == SOCKET_ERROR)
+    {
+        ret = WSAGetLastError();
+        printf("Ket noi khong thanh cong - %d\n", ret);
+        return 1;
+    }
+
+    // Gui du lieu den server
+    const char* msg = "Hello server!!!\n";
+    const char* linedown = "\n";
+    
+    
+
+    //Get computer name
+    DWORD msg1;
+    char meh[64] = "";
+    char buff[64];
+    DWORD size = sizeof(meh);
+    msg1 = GetComputerName((LPWSTR)meh, &size);
+
+    if (msg1 != 0) {
+
+        printf("GetComputerName() return value: %d, Error (if any): %d \n", msg1, GetLastError());
+        printf("The logical drives of this machine are:\n");
+
+        for (int i = 0; i < 64; i++) {
+            printf("%c", meh[i]);
+            buff[i] = meh[i];
+        }
+        printf("\n");
+    }
+        
+    else
+        printf("GetLogicalDriveStrings() is failed lor!!! Error code: %d\n", GetLastError());
+
+
+    //Get local drive string
+    DWORD mydrives = 32;
+    char lpBuffer[32];
+    char buf[32];
+
+    DWORD msg2;
+    int i;
+    msg2 = GetLogicalDriveStrings(mydrives, (LPWSTR)lpBuffer);
+    if (msg2 != 0)
+    {
+        printf("GetLogicalDriveStrings() return value: %d, Error (if any): %d \n", msg2, GetLastError());
+        printf("The logical drives of this machine are:\n");
+
+        for (i = 0; i < 32; i++) {
+            printf("%c", lpBuffer[i]);
+            buf[i] = lpBuffer[i];
+        }
+        printf("\n");
+
+    }
+    else
+        printf("GetLogicalDriveStrings() is failed lor!!! Error code: %d\n", GetLastError());
+    
+
+
+    //Get disk free space
+    
+   
+    LPCWSTR pszDrive = NULL;
+    BOOL fResult;
+
+    DWORD dwSectPerClust, dwBytesPerSect, dwFreeClusters, dwTotalClusters;
+
+
+
+    fResult = GetDiskFreeSpace(pszDrive,
+        &dwSectPerClust,
+        &dwBytesPerSect,
+        &dwFreeClusters,
+        &dwTotalClusters);
+
+
+
+    
+
+    //Gui du lieu toi server
+    send(client, msg, strlen(msg), 0);
+    send(client, linedown, strlen(linedown), 0);
+
+    for (i = 0; i < 64; i++) {
+        send(client, (char*)&buff[i], sizeof(buff[i]), 0);
+    }
+    send(client, linedown, strlen(linedown), 0);
+
+    for (i = 0; i < 32; i++) {
+        send(client, (char*)&buf[i], sizeof(buf[i]), 0);
+    }
+    send(client, linedown, strlen(linedown), 0);
+
+    send(client, (char*)&dwSectPerClust, dwSectPerClust, 0);
+    send(client, (char*)&dwBytesPerSect, dwBytesPerSect, 0);
+    send(client, (char*)&dwFreeClusters, dwFreeClusters, 0);
+    send(client, (char*)&dwTotalClusters, dwTotalClusters, 0);
+
+    closesocket(client);
+    WSACleanup();
+}
