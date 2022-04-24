@@ -1,0 +1,50 @@
+#include <stdio.h>
+#include <winsock2.h>
+
+#pragma comment(lib, "ws2_32")
+#pragma warning(disable:4996)
+
+int main()
+{
+    // Khoi tao winsock
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2, 2), &wsa);
+
+    // Tao socket cho ket noi
+    SOCKET listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+    // Tao dia chi server
+    SOCKADDR_IN addr;
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    addr.sin_port = htons(8000);
+
+    // Gan socket voi cau truc dia chi
+    bind(listener, (SOCKADDR*)&addr, sizeof(addr));
+
+    // Chuyen socket sang trang thai cho ket noi
+    listen(listener, 5);
+
+    // Chap nhan ket noi
+    printf("\nDang cho ket noi...");
+
+    SOCKADDR_IN clientAddr;
+    int clientAddrLen = sizeof(clientAddr);
+
+    unsigned short local_port ;
+    
+    SOCKET sd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);      // create the socket
+    bind(sd, (struct sockaddr*)&addr, sizeof(addr));     // assign a port number
+    getsockname(sd, (struct sockaddr*)&addr, &clientAddrLen); // read binding
+
+    local_port = ntohs(addr.sin_port);
+
+    SOCKET client = accept(listener, (SOCKADDR*)&clientAddr, &clientAddrLen);
+    printf("\nKet noi moi: %d, dia chi IP: %s tai cong %u", client, inet_ntoa(clientAddr.sin_addr), local_port);
+
+    // Dong ket noi
+    closesocket(client);
+    closesocket(listener);
+    WSACleanup();
+}
+
