@@ -1,0 +1,68 @@
+// Tao server doc file va gui sang client
+
+#include <stdio.h>
+#include <winsock2.h>
+
+#pragma comment(lib, "ws2_32")
+#pragma warning(disable:4996)
+
+int main()
+{
+    // Khoi tao thu vien
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2, 2), &wsa);
+
+    // Tao socket
+    SOCKET listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+    // Khai bao dia chi server
+    SOCKADDR_IN addr;
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    addr.sin_port = htons(8000);
+
+    // Gan cau truc dia chi voi socket
+    bind(listener, (SOCKADDR*)&addr, sizeof(addr));
+
+    // Chuyen sang trang thai cho ket noi
+    listen(listener, 5);
+
+    // Cho ket noi moi
+    SOCKET client = accept(listener, NULL, NULL);
+
+    FILE* f = fopen("W:\\0.o\\Send.txt", "rb");
+    FILE* ff = fopen("W:\\0.o\\Receive.txt", "wb");
+
+    char buf[256];
+    char buff[256];
+    int ret;
+    while (!feof(f))
+    {
+        ret = fread(buf, 1, sizeof(buf), f);
+        if (ret > 0)
+        {
+            send(client, buf, ret, 0);
+        }
+
+    }
+
+
+    while (1)
+    {
+        ret = recv(client, buff, sizeof(buff), 0);
+        if (ret <= 0)
+            break;
+        fwrite(buff, 1, ret, ff);
+
+            if (strncmp(buff, "exit", 4) == 0)
+            break;
+    }
+
+
+    fclose(f);
+
+    // Dong ket noi va giai phong thu vien
+    closesocket(client);
+    closesocket(listener);
+    WSACleanup();
+}
