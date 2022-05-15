@@ -1,0 +1,131 @@
+// NonBlockingServer.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+#include <winsock2.h>
+#include <stdio.h>
+
+#pragma comment(lib, "ws2_32")
+#pragma warning(disable:4996)
+int main()
+{
+    // Khoi tao thu vien
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2, 2), &wsa);
+
+    // Tao socket
+    SOCKET listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+    // Chuyen socket sang trang thai bat dong bo
+    unsigned long ul = 1;
+    ioctlsocket(listener, FIONBIO, &ul);
+
+    // Khai bao dia chi server
+    SOCKADDR_IN addr;
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    addr.sin_port = htons(8000);
+
+    // Gan cau truc dia chi voi socket
+    bind(listener, (SOCKADDR*)&addr, sizeof(addr));
+
+    // Chuyen sang trang thai cho ket noi
+    listen(listener, 5);
+
+    SOCKET clients[16];
+    int numClients = 0;
+    int check[64];
+    int ret;
+
+    char* id[16];
+    char buf[256];
+
+    
+
+    const char* msg = "Vui long nhap id theo cu phap: client_id: xxxxxx\n";
+    const char* msg1 = "Ket noi thanh cong\n";
+
+    while (1)
+    {
+        // Chap nhan ket noi moi
+        // printf("Dang cho client moi\n");
+        SOCKET client = accept(listener, NULL, NULL);
+        if (client == INVALID_SOCKET)
+        {
+            ret = WSAGetLastError();
+            if (ret == WSAEWOULDBLOCK)
+            {
+                // Thao tac vao ra dang duoc thuc hien
+            }
+        }
+        else
+        {   
+            printf("Client moi ket noi: %d\n", client);
+
+            // Luu client vao mang
+            clients[numClients] = client;
+            numClients++;
+
+            //for (int i = 0; i < numClients; i++) {
+            //    
+            //    ret = recv(clients[i], buff, sizeof(buff), 0);
+            //    else {
+            //        buff[ret] = 0;
+            //        found = strstr(buff, "client_id");
+
+            //    if (found = NULL) {
+            //        send(client, msg1, strlen(msg1), 0);
+            //        break;
+            //     }
+            //        
+
+            //    } 
+            //    
+
+            //}
+        }
+
+        // Nhan du lieu tu cac client
+        for (int i = 0; i < numClients; i++)
+        {
+            //printf("Dang cho du lieu tu client %d\n", clients[i]);
+
+            ret = recv(clients[i], buf, sizeof(buf), 0);
+            if (ret == SOCKET_ERROR)
+            {
+                ret = WSAGetLastError();
+            }
+            else
+            {
+                // Khong bi loi, co du lieu => in ra man hinh
+                if (check[i] != NULL ) {
+                    char* found = strstr(buf, "client_id:");
+
+                    if (found == NULL) {
+                        send(clients[i], msg, strlen(msg), 0);
+                    }
+
+
+                    if (found != NULL) {
+                        check[i] = NULL;
+
+                     
+                        id[i] = buf; 
+                        printf("ID cua client %d: %s\n", clients[i], buf + 10);
+                        send(clients[i], msg1, strlen(msg1), 0);
+                    }
+                }
+                else {
+                    buf[ret] = 0;
+                    printf("Du lieu cua client %d: %s\n", clients[i], buf);
+
+                    for (int j = 0; j < numClients; j++) {
+                        if (clients[j] != client) {
+
+                            send(clients[j], buf, strlen(buf), 0);
+                        }
+                    }
+                }
+                    
+            }
+        }
+    }
+}
