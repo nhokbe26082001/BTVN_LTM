@@ -1,0 +1,8 @@
+﻿  GUI.cpp
+C:\Users\anhch\source\repos\GUI\GUI\GUI.cpp(213,45): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\anhch\source\repos\GUI\GUI\GUI.cpp(247,34): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\anhch\source\repos\GUI\GUI\GUI.cpp(289,27): warning C4244: 'initializing': conversion from 'LRESULT' to 'int', possible loss of data
+C:\Users\anhch\source\repos\GUI\GUI\GUI.cpp(262,15): warning C4101: 'wmEvent': unreferenced local variable
+C:\Users\anhch\source\repos\GUI\GUI\GUI.cpp(262,9): warning C4101: 'wmId': unreferenced local variable
+resource.h(36): fatal error RC1004: unexpected end of file found
+  
